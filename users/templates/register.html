@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block header %}
+    <script src="{% static 'js/md5-min.js' %}"></script>
+{% endblock header %}
+
+{% block title %}Register{% endblock %}
+
+{% block main %}
+
+    <div class="login-body">
+        <div class="login-card">
+            <div class="login-top">
+                <h3>New User</h3>
+                <h5>Welcome back</h5>
+            </div>
+            <div class="login-bottom">
+                <form method="post" action="" onsubmit="return register();">
+                    {% csrf_token %}
+                    <div class="login-input-box">
+                        <input type="text" id="user_name" name="user_name" value="" class="login-admin active"
+                               placeholder="Email Registration">
+
+                        <span style="color:red;" id="aSpan"></span>
+                        <input type="password" id="pwd" name="pwd" value="" class="login-password"
+                               placeholder="Password">
+                        <span style="color:red;" id="pSpan"></span>
+
+                        <button class="login-btn" style="color: white;text-decoration: none;cursor: pointer">Register
+                        </button>
+                    </div>
+                </form>
+                <div class="login-img">
+                    <img src="" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer_js %}
+    <script>
+        function isEmail(str) {
+            // Verify the email format, requiring a username of at least 6 characters and a valid email domain name
+            const reg = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+            return reg.test(str);
+
+        }
+
+        function checkUserName(user_name) {
+            let flag = false;
+            $.ajax({
+                url: '/users/checkUserName/',
+                type: 'GET',
+                async: false,
+                data: {'user_name': user_name},
+                success: function (result) {
+                    if (result.flag) {
+                        $('#aSpan').html('User name already exists');
+                        flag = false;
+                    }
+                }
+            });
+            return flag;
+        }
+
+
+        function register() {
+            // Get the input value and remove leading and trailing spaces
+            const account = $.trim($('#user_name').val());
+            const password = $.trim($('.login-password').val());
+
+            // Verification of email format and length
+            if (account.length < 6 || !isEmail(account) || checkUserName(account)) {
+                $('#aSpan').text('The email address must be at least six characters long and in a valid format.');
+                return false;
+            }
+
+            // Verification password length
+            if (password.length < 6) {
+                $('#pSpan').text('The password must be at least six characters long.');
+                return false;
+            }
+
+            // Encrypt the password using hex_md5
+            const hex_pwd = hex_md5(password);
+            $('#pwd').val(hex_pwd);
+
+
+            // Return true after verification, allowing form submission
+            return true;
+        }
+    </script>
+
+{% endblock footer_js %}

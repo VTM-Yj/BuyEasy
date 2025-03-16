@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/detail.css' %}">
+    <link rel="stylesheet" href="{% static 'css/carts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mygxin.css' %}">
+    <link rel="stylesheet" href="{% static 'css/address.css' %}">
+    <link rel="stylesheet" href="{% static 'css/order_detail.css' %}">
+    <link rel="stylesheet" href="{% static 'css/order_form.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/carts.js' %}"></script>
+    {% block header %}{% endblock header %}
+</head>
+<body>
+<div class="head">
+    <div class="head-in" style="width: 1600px;">
+        <ul class="options" style="width: 600px;">
+            <li class="sub"><a href="{% url 'my_orders' %}">My Order</a></li>
+            <li class="sub"><a href="">Customer Service</a></li>
+            <li class="sub"><a href="/cart/queryAll/">Cart</a></li>
+        </ul>
+        {% if current_user %}
+            <div class="register">Welcome <a href="/users/center/">{{ current_user.user_name }}</a></div>
+        {% else %}
+            <div class="register"><a href="{% url 'register' %}">Register</a></div>
+            <div class="sign"><a href="{% url 'login' %}">Log in</a></div>
+        {% endif %}
+
+
+    </div>
+    <div class="search">
+        <ul class="items">
+            <li class="item">
+                <a href="{% url 'category' cid=2 %}">
+                    <img src="{% static 'images/1_09.png' %}" alt="10:00开抢">
+                    <p>10:00开抢</p>
+                </a>
+            </li>
+            <li class="item">
+                <a href="{% url 'category' cid=2 %}">
+                    <img src="{% static 'images/1_11.png' %}" alt="买手砍价">
+                    <p>买手砍价</p>
+                </a>
+            </li>
+            <li class="item">
+                <a href="{% url 'category' cid=2 %}">
+                    <img src="{% static 'images/1_13.png' %}" alt="验货质检">
+                    <p>验货质检</p>
+                </a>
+            </li>
+        </ul>
+        <div class="input">
+            <input type="text" id="search_input" name="search" placeholder="Search">
+            <img src="{% static 'images/1_06.png' %}" alt="Search">
+        </div>
+    </div>
+    {% block main %}{% endblock main %}
+    {% block footer_js %}{% endblock footer_js %}
+</div>
+</body>
+</html>

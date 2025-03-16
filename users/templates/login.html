@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Log In{% endblock title %}
+
+{% block header %}
+    <script src="{% static 'js/md5-min.js' %}"></script>
+{% endblock header %}
+
+{% block main %}
+    <div class="login-body">
+        <div class="login-card">
+            <div class="login-top">
+                <h3>Log in</h3>
+                <h5>Welcome Back!</h5>
+            </div>
+            <div class="login-bottom">
+                <form method="post" action="/users/login/" onsubmit="return login();">
+                    <input type="hidden" name="time" id="time">
+                    <div class="login-input-box">
+                        {% csrf_token %}
+
+                        <input type="text" id="user_name" name="user_name" value="" class="login-admin active"
+                               placeholder="Email or Username">
+                        <span style="color:red;" id="aSpan"></span>
+
+                        <input type="password" id="pwd" name="pwd" value="" class="login-password"
+                        placeholder="Password">
+                        <span style="color:red;" id="pSpan"></span>
+
+                        <input type="text" style="height:36px;width: 100px;" id="code"
+                               onblur="checkCode(this.value)"><img src="{% url 'loadCode' %}"
+                                                                   onclick="changeCode(this)"><span style="color:red;"
+                                                                                                    id="cSpan"></span>
+
+                        <input type="hidden" name="redirect" value="">
+                        <input type="hidden" name="cartitems" value="None">
+
+                        <button class="login-btn" style="color: white;text-decoration: none;cursor: pointer">Log in
+                        </button>
+                    </div>
+                </form>
+                <div class="login-img">
+                    <img src=" " alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main %}
+
+{% block footer_js %}
+    <script>
+        function isEmail(str) {
+            var reg = /^[a-zA-Z0-9_-]{6,}@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            return reg.test(str);
+        }
+
+        function login() {
+            //获取输入框的值
+            let user_name = $('#user_name').val();
+            let password = $('.login-password').val();
+
+            //简单校验
+            if (user_name.length < 6 || !isEmail(user_name)) {
+                $('#aSpan').text('The email address cannot be less than six characters long.');
+                return false;
+            }
+
+            if (password.length < 6) {
+                $('#pSpan').text('The password length cannot be less than six characters');
+                return false;
+            }
+
+            var code = $('#code').val();
+            var cflag = checkCode(code);
+
+            if (!cflag) {
+                $('cSpan').text('×');
+                return false;
+            }
+
+            const hex_pwd = hex_md5(password);
+            $('#pwd').val(hex_pwd);
+        }
+
+
+        //切换验证码
+        function changeCode(obj) {
+            obj.src = "{% url 'loadCode' %}?r=" + new Date().getTime();
+        }
+
+
+        function checkCode(txt) {
+            var cflag = false;
+            $.ajax({
+                url: '/users/checkCode/',
+                type: 'get',
+                data: {'code': txt},
+                async: false,
+                success: function (result) {
+                    var flag = result.checkFlag;
+                    if (flag) {
+                        cflag = true;
+                        $('#cSpan').text('√');
+                    } else {
+                        $('#cSpan').text('×');
+                    }
+                }
+            })
+
+            return true;
+
+        }
+
+    </script>
+{% endblock footer_js %}

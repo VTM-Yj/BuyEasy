@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detail{% endblock %}
+
+{% block main %}
+
+    <div class="detail-body" data-goods-id="25">
+        <div class="bread">
+            <ul class="bread-content">
+                <li class="bread-item">
+                    <a href="/">Home</a>&gt;
+                </li>
+
+                <li class="bread-item">
+                    <a href="/category/{{ goods.category_id }}">{{ goods.category.cname }}</a>&gt;
+                </li>
+
+                <li class="bread-item">
+                    <a href="javascript:void(0);">{{ goods.gname }}</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- detail-content -->
+        <div class="detail-content">
+
+            <div class="detail-con-left">
+                <img id="rightImg" src="{{ goods.getImg }}" alt="">
+            </div>
+
+            <div class="detail-con-right">
+                <h3>{{ goods.gDesc }}</h3>
+                <div class="price">
+                    <i>£</i>
+                    <p>{{ goods.price }}</p>
+                    <s>£{{ goods.oldPrice }}</s>
+                </div>
+
+                <div class="line"></div>
+                <div class="color">
+                    <p class="p-item">Color：</p>
+                    <ul class="MinImgList">
+                        {% for color in goods.getColorsList %}
+                            <li class="MinImg {% if forloop.first %}active{% endif %}" data-color-id="{{ color.id }}">
+                                <img src="{{ color.colorUrl }}" width="30px" height="30px" alt="">
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="size">
+                    <p class="p-item">Size：</p>
+                    <ul class="size-list">
+                        {% for size in goods.getSizeList %}
+                            <li data-size-id="{{ size.id }}" class="size-item {% if forloop.first %}active{% endif %}">
+                                {{ size.sName }}
+                            </li>
+                        {% empty %}
+                            <li class="size-item">No sizes available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="num">
+                    <p class="p-item">
+                        Count：
+                    </p>
+                    <div class="jian">-</div>
+                    <input type="number" name="" value="1">
+                    <div class="jia">+</div>
+                </div>
+                <form action="{% url 'addCart' %}" method="post">
+                    <input name="color_id" type="hidden">
+                    <input name="product_id" type="hidden" value="{{ goods.id }}">
+                    <input name="size_id" type="hidden">
+                    <input name="count" type="hidden">
+                    <input name="flag" value="add" type="hidden">
+                    {% csrf_token %}
+                    <button class="male" onclick="goCart();">Add to cart</button>
+                </form>
+
+            </div>
+
+            <div class="detail-con-nav">
+                <ul class="detail-nav">
+                    <li class="active nav-item "><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Product
+                        Detail</a>
+                    </li>
+                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Order Tracking</a>
+                    </li>
+                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Customer Service</a>
+                    </li>
+                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Mobile purchase</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sub-nav">
+                <ul class="subNav">
+                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Overall style</a></li>
+                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Model Show</a></li>
+                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Details</a></li>
+                </ul>
+            </div>
+
+            <div class="zhanshi">
+                {% for detailName, imageList in goods.getDetailList.items %}
+                    <div class="zhanshi-model">
+                        <p>{{ detailName }}</p>
+                        <div class="line"></div>
+                        {% for image in imageList %}
+                            <img src="{{ image }}" alt="">
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="goods-model" style="margin-right: -18px; text-align: center">
+        <img src="{% static 'images/recommend.png' %}" style="position: relative; left: -10px; top: 10px"
+             alt="Recommend">
+        <div class="goods-content">
+            {% for recommend in recommendList %}
+                <div class="good">
+                    <a href="{% url 'goods_details' recommend.id %}">
+                        <img src="{{ recommend.getImg }}" width="285px" height="285px" alt="Product Image">
+                        <p class="name">{{ recommend.gname }}</p>
+                        <div class="price">
+                            <i>£</i>
+                            <p class="big">{{ recommend.price }}</p>
+                            <s>£{{ recommend.oldPrice }}</s>
+                        </div>
+                        <div class="sale">
+                            Special Sale
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+
+
+{% endblock %}
+
+{% block footer_js %}
+
+    <script>
+        $('.MinImg').click(function () {
+            $('.MinImg').removeClass('active')
+            $(this).addClass('active')
+            $('#rightImg').attr('src', $(this).children('img').attr('src'))
+        })
+        $('.size-item').click(function () {
+            $('.size-item').removeClass('active')
+            $(this).addClass('active')
+        })
+        $('.jian').click(function () {
+
+            num_text_view = $('.num').children('input[type="number"]')
+            val = $(num_text_view).val()
+            if (val <= 1) return
+            $(num_text_view).val(val - 1)
+        })
+        $('.jia').click(function () {
+            <!--发给服务器问一下这个商品(商品+颜色+尺寸)还有没有货-->
+            num_text_view = $('.num').children('input[type="number"]')
+            val = eval($(num_text_view).val())
+            if (val >= 60) return
+            $(num_text_view).val(val + 1)
+
+        })
+
+        function goCart() {
+            var selectedColor = $('.MinImg.active').attr('data-color-id');  // 或者 .data('color-id')
+            var selectedSize = $('.size-item.active').attr('data-size-id');   // 或者 .data('size-id')
+            var count = $('.num input[type="number"]').val();  // 假设数量输入框的选择器
+
+            // 设置到表单隐藏输入中
+            $('form').find('input[name="color_id"]').val(selectedColor);
+            $('form').find('input[name="size_id"]').val(selectedSize);
+            $('form').find('input[name="count"]').val(count);
+        }
+
+    </script>
+
+{% endblock footer_js %}

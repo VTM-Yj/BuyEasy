@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Center{% endblock %}
+
+{% block main %}
+
+    {% csrf_token %}
+    <div class="Bott">
+        <div class="wrapper clearfix" style="margin: 0 auto">
+            <div class="zuo fl" style="margin-left: 100px">
+                <h3>
+                    <a href=""><img src="{% static 'images/tx.png' %}"></a>
+                    <p class="clearfix"><span class="fl">[{{ current_user.user_name }}]</span><span
+                            class="fr logout">[Log out]</span></p>
+                </h3>
+                <div>
+                    <ul>
+                        <li><a href="">Order</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="{% url 'address_list' %}">Address</a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="{% url 'index' %}">Home</a></li>
+                    </ul>
+
+                </div>
+            </div>
+            <div class="you fl">
+
+                <div class="tx clearfix">
+                    <div class="fl clearfix">
+                        <a href="/users/center/" class="fl"><img src="{% static 'images/tx.png' %}"></a>
+                        <p class="fl"><span>{{ current_user.user_name }}</span><a href="">Personal Information&gt;</a>
+                        </p>
+                    </div>
+                    <div class="fr">Email：{{ current_user.user_name }}</div>
+                </div>
+                <div class="bott">
+                    <div class="clearfix">
+                        <a href="" class="fl"><img src="{% static 'images/gxin1.jpg' %}"></a>
+                        <p class="fl"><span>Orders to be paid:<strong>0</strong></span>
+                            <a href="">View pending payment orders&gt;</a>
+                        </p>
+                    </div>
+                    <div class="clearfix">
+                        <a href="/users/center/" class="fl"><img src="{% static 'images/gxin2.jpg' %}"></a>
+                        <p class="fl"><span>Orders waiting to be received:<strong>0</strong></span>
+                            <a href="/users/center/">View pending orders&gt;</a>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+{% endblock main %}
+
+{% block footer_js %}
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the name we want
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $(document).ready(function () {
+            $('.logout').click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '/users/logout/',
+                    data: {
+                        'csrfmiddlewaretoken': getCookie('csrftoken')
+                    },
+                    success: function (result) {
+                        if (result.del_flag) {
+                            window.location.href = '/users/login/';
+                        }
+                    },
+                    error: function () {
+                        alert("Logout failed!");
+                    }
+                });
+            });
+        });
+
+    </script>
+{% endblock footer_js %}

@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cart{% endblock title %}
+
+{% block main %}
+    <section class="cartMain">
+        <div class="cartMain_hd">
+            <ul class="order_lists cartTop">
+                <li class="list_chk">
+                    <input type="checkbox" id="all" class="whole_check"
+                           style="display: inline-block; position: relative; left: -8px; top: 4px">
+                    Select
+                </li>
+                <li class="list_con">Product</li>
+                <li class="list_info">Details</li>
+                <li class="list_price">Price</li>
+                <li class="list_amount">Count</li>
+                <li class="list_sum">Total</li>
+                <li class="list_op">Operation</li>
+            </ul>
+        </div>
+
+        <div class="cartBox">
+            <div class="order_content">
+                {% for cart in cartList %}
+                    <ul style="position: relative" class="order_lists"
+                        product_id="{{ cart.product_id }}"
+                        size_id="{{ cart.size_id }}"
+                        color_id="{{ cart.color_id }}">
+                        <li class="list_chk">
+                            <input type="checkbox" class="son_check"
+                                   style="display: inline-block; position: absolute; left: 21px; top: 54px">
+                        </li>
+                        <li class="list_con">
+                            <div class="list_img">
+                                <a href="javascript:;">
+                                    <!-- 示例中显示商品描述对应的图片，这里以颜色图片为例 -->
+                                    <img src="{{ cart.getColor.colorUrl }}" alt="">
+                                </a>
+                            </div>
+                            <div class="list_text">
+                                <a href="javascript:;">{{ cart.getGoods.gDesc }}</a>
+                            </div>
+                        </li>
+                        <li class="list_info">
+                            <p>Color: {{ cart.getColor.colorName }}</p>
+                            <p>Size: {{ cart.getSize.sName }}</p>
+                        </li>
+                        <li class="list_price">
+                            <!-- 单价统一使用£ -->
+                            <p class="price">£{{ cart.getGoods.price }}</p>
+                        </li>
+                        <li class="list_amount">
+                            <div class="amount_box">
+                                <a href="javascript:;" class="reduce reSty"
+                                   product_id="{{ cart.product_id }}"
+                                   size_id="{{ cart.size_id }}"
+                                   color_id="{{ cart.color_id }}">-</a>
+                                <input type="text" value="{{ cart.count }}" class="sum" readonly>
+                                <a href="javascript:;" class="plus"
+                                   product_id="{{ cart.product_id }}"
+                                   size_id="{{ cart.size_id }}"
+                                   color_id="{{ cart.color_id }}">+</a>
+                            </div>
+                        </li>
+                        <li class="list_sum">
+                            <!-- 总计：调用后端方法，返回数值，再在前端模板中添加£ -->
+                            <p class="sum_price">£{{ cart.getGoods.getSubTotal }}</p>
+                        </li>
+                        <li class="list_op">
+                            <p class="del">
+                                <a href="javascript:;" class="delBtn"
+                                   product_id="{{ cart.product_id }}"
+                                   size_id="{{ cart.size_id }}"
+                                   color_id="{{ cart.color_id }}">Delete</a>
+                            </p>
+                        </li>
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="bar-wrapper">
+            <div class="bar-right">
+                <div class="piece">Subtotal: <strong class="piece_num" id="all_count">0</strong> items</div>
+                <div class="totalMoney">Total: <strong class="total_text" id="all_price">£0.00</strong></div>
+                <div class="calBtn"><a href="javascript:;" id="jiesuan">Ordered</a></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="model_bg" style="display: none;"></section>
+    <section class="my_model" style="display: none;">
+        <p class="title">Delete Product <span class="closeModel">X</span></p>
+        <p>Are you sure you want to delete this product?</p>
+        <div class="opBtn">
+            <a href="javascript:;" class="dialog-sure">Confirm</a>
+            <a href="javascript:;" class="dialog-close">Close</a>
+        </div>
+    </section>
+    {% csrf_token %}
+{% endblock main %}
+
+{% block footer_js %}
+    <script>
+        // cart.js
+        $(document).ready(function () {
+            // 全局变量（尽量在当前作用域中定义）
+            var $allCheckbox = $('input[type="checkbox"]'),
+                $wholeCheckbox = $('.whole_check'),
+                $cartBox = $('.cartBox'),
+                $shopCheckbox = $('.shopChoice'),
+                $sonCheckbox = $('.son_check');
+
+            // ------------------------------
+            // 1. Checkbox 选中样式处理
+            // ------------------------------
+            $allCheckbox.on('click', function () {
+                $(this).next('label').toggleClass('mark', $(this).is(':checked'));
+            });
+
+            $wholeCheckbox.on('click', function () {
+                var $checkboxes = $cartBox.find('input[type="checkbox"]');
+                if ($(this).is(':checked')) {
+                    $checkboxes.prop("checked", true).next('label').addClass('mark');
+                } else {
+                    $checkboxes.prop("checked", false).next('label').removeClass('mark');
+                }
+                updateTotal();
+            });
+
+            $sonCheckbox.on('click', function () {
+                // 如果所有单个商品都选中，则全局全选也选中
+                $wholeCheckbox.prop("checked", $sonCheckbox.filter(':checked').length === $sonCheckbox.length)
+                    .next('label').toggleClass('mark', $sonCheckbox.filter(':checked').length === $sonCheckbox.length);
+                updateTotal();
+            });
+
+            $shopCheckbox.on('click', function () {
+                var $parentCartBox = $(this).closest('.cartBox');
+                if ($(this).is(':checked')) {
+                    $parentCartBox.find('.son_check').prop("checked", true).next('label').addClass('mark');
+                } else {
+                    $parentCartBox.find('.son_check').prop("checked", false).next('label').removeClass('mark');
+                }
+                // 如果所有店铺都选中，则全局全选也选中
+                $wholeCheckbox.prop("checked", $shopCheckbox.filter(':checked').length === $shopCheckbox.length)
+                    .next('label').toggleClass('mark', $shopCheckbox.filter(':checked').length === $shopCheckbox.length);
+                updateTotal();
+            });
+
+            $cartBox.each(function () {
+                var $thisCartBox = $(this);
+                var $childChecks = $thisCartBox.find('.son_check');
+                $childChecks.on('click', function () {
+                    $thisCartBox.find('.shopChoice').prop("checked", $childChecks.filter(':checked').length === $childChecks.length)
+                        .next('label').toggleClass('mark', $childChecks.filter(':checked').length === $childChecks.length);
+                    updateTotal();
+                });
+            });
+
+            // ------------------------------
+            // 2. 商品数量控制
+            // ------------------------------
+            // 封装数量更新显示逻辑
+            function updateItemCount($order, newCount) {
+                var $input = $order.find('.sum'),
+                    $sumPriceElem = $order.find('.sum_price'),
+                    priceText = $order.find('.price').text(), // e.g. "£10"
+                    unitPrice = parseFloat(priceText.substring(1)) || 0,
+                    newSubtotal = newCount * unitPrice;
+                $input.val(newCount);
+                $sumPriceElem.text('£' + newSubtotal);
+            }
+
+            // 封装 Ajax 数量更新请求
+            function updateQuantityOnServer(flag, $order) {
+                var csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val(),
+                    product_id = $order.attr('product_id'),
+                    color_id = $order.attr('color_id'),
+                    size_id = $order.attr('size_id');
+                $.ajax({
+                    url: '{% url "addCart" %}',
+                    type: 'post',
+                    data: {
+                        product_id: product_id,
+                        color_id: color_id,
+                        size_id: size_id,
+                        flag: flag, // 'plus' 或 'minus'
+                        csrfmiddlewaretoken: csrfmiddlewaretoken
+                    },
+                    success: function (response) {
+                        console.log("Quantity update (" + flag + ") success:", response);
+                    },
+                    error: function () {
+                        console.error("Quantity update (" + flag + ") failed");
+                    }
+                });
+            }
+
+            // Plus 按钮
+            $('.plus').off('click').on('click', function (event) {
+                event.preventDefault();
+                var $order = $(this).closest('.order_lists');
+                var $input = $(this).prev('input');
+                var currentCount = parseInt($input.val(), 10) || 0;
+                var newCount = currentCount + 1;
+                updateItemCount($order, newCount);
+                $order.find('.reduce').removeClass('reSty');
+                updateTotal();
+                updateQuantityOnServer('plus', $order);
+            });
+
+            // Reduce 按钮
+            $('.reduce').off('click').on('click', function (event) {
+                event.preventDefault();
+                var $order = $(this).closest('.order_lists');
+                var $input = $(this).next('input');
+                var currentCount = parseInt($input.val(), 10) || 0;
+                if (currentCount <= 1) {
+                    $(this).addClass('reSty');
+                    return;
+                }
+                var newCount = currentCount - 1;
+                updateItemCount($order, newCount);
+                if (newCount === 1) {
+                    $(this).addClass('reSty');
+                }
+                updateTotal();
+                updateQuantityOnServer('minus', $order);
+            });
+
+            // 数量输入实时更新
+            $('.sum').off('keyup').on('keyup', function () {
+                var $order = $(this).closest('.order_lists');
+                var $input = $(this);
+                var $sumPriceElem = $order.find('.sum_price');
+                var priceText = $order.find('.price').text();
+                var unitPrice = parseFloat(priceText.substring(1)) || 0;
+                $input.val($input.val().replace(/\D|^0/g, ''));
+                var count = parseInt($input.val(), 10) || 1;
+                var newSubtotal = count * unitPrice;
+                $input.attr('value', count);
+                $sumPriceElem.text('£' + newSubtotal);
+                updateTotal();
+                // 可选：可在失去焦点时发送 Ajax 请求同步数量
+            });
+
+            // ------------------------------
+            // 3. 删除操作：模态框处理
+            // ------------------------------
+            // 声明全局变量用于删除操作
+            var $currentOrder, $currentOrderContent;
+            $('.delBtn').off('click').on('click', function () {
+                $currentOrder = $(this).closest('.order_lists');
+                $currentOrderContent = $currentOrder.closest('.order_content');
+                $('.model_bg, .my_model').fadeIn(300);
+            });
+
+            $('.closeModel, .dialog-close').off('click').on('click', function () {
+                closeModal();
+            });
+
+            // 封装关闭模态框函数，挂载到全局
+            window.closeModal = function () {
+                $('.model_bg, .my_model').fadeOut(300);
+            };
+
+            // 确认删除操作
+            $('.dialog-sure').off('click').on('click', function (event) {
+                event.preventDefault();
+                var csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val();
+                var product_id = $currentOrder.attr('product_id');
+                var color_id = $currentOrder.attr('color_id');
+                var size_id = $currentOrder.attr('size_id');
+                $.ajax({
+                    type: 'post',
+                    url: '{% url "addCart" %}',
+                    data: {
+                        product_id: product_id,
+                        color_id: color_id,
+                        size_id: size_id,
+                        csrfmiddlewaretoken: csrfmiddlewaretoken,
+                        flag: 'delete'
+                    },
+                    async: false,
+                    success: function (response) {
+                        console.log("Delete success:", response);
+                        $currentOrder.remove();
+                        if ($currentOrderContent && $currentOrderContent.html().trim().length === 0) {
+                            $currentOrderContent.closest('.cartBox').remove();
+                        }
+                        closeModal();
+                        updateTotal();
+                    },
+                    error: function (event) {
+                        event.stopImmediatePropagation();
+                    }
+                });
+            });
+
+            // ------------------------------
+            // 4. 总计计算函数
+            // ------------------------------
+            function updateTotal() {
+                var totalMoney = 0, totalCount = 0;
+                $('.son_check:checked').each(function () {
+                    var $order = $(this).closest('.order_lists');
+                    var subtotal = parseFloat($order.find('.sum_price').text().substring(1)) || 0;
+                    var count = parseInt($order.find('.sum').val(), 10) || 0;
+                    totalMoney += subtotal;
+                    totalCount += count;
+                });
+                $('.total_text').text('£' + totalMoney.toFixed(2));
+                $('.piece_num').text(totalCount);
+                $('.calBtn a').toggleClass('btn_sty', totalMoney !== 0 && totalCount !== 0);
+            }
+
+            // ------------------------------
+            // 5. 结算按钮：收集选中购物项信息
+            // ------------------------------
+            $('#jiesuan').off('click').on('click', function () {
+                var selectedItems = [];
+                $('.son_check:checked').each(function () {
+                    var $order = $(this).closest('.order_lists');
+                    var item = {
+                        product_id: $order.attr('product_id'),
+                        size_id: $order.attr('size_id'),
+                        color_id: $order.attr('color_id')
+                    };
+                    selectedItems.push(JSON.stringify(item));
+                });
+                if (selectedItems.length === 0) return;
+                var url = '/order/create/?cartitems=' + selectedItems.join(',');
+                window.location.href = url;
+            });
+
+            // 初始调用总计
+            updateTotal();
+        });
+    </script>
+{% endblock footer_js %}

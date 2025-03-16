@@ -1,0 +1,176 @@
+/* addresses.css */
+
+/* Container for the address management pages */
+.address-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* Address List Styles */
+.address-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.address-list li {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.address-list li .address-actions a {
+    color: #337ab7;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.address-list li .address-actions a:hover {
+    text-decoration: underline;
+}
+
+/* Address Form Styles */
+.address-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.address-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.address-form input[type="text"],
+.address-form input[type="tel"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.address-form button {
+    background-color: #337ab7;
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.address-form button:hover {
+    background-color: #286090;
+}
+
+/* Address Delete Confirmation Styles */
+.address-confirm-delete {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.address-confirm-delete p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.address-confirm-delete button {
+    background-color: #d9534f;
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.address-confirm-delete button:hover {
+    background-color: #c9302c;
+}
+
+.address-confirm-delete a {
+    font-size: 14px;
+    color: #337ab7;
+    text-decoration: none;
+}
+
+.address-confirm-delete a:hover {
+    text-decoration: underline;
+}
+
+/* addresses.css */
+
+/* Container for the address management pages */
+.address-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* The form that uses <ul> + <li> structure */
+.address-form ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.address-form li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* The label is fixed width, or you can let flex handle it */
+.address-form li label {
+    width: 120px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.address-form li input[type="text"],
+.address-form li input[type="tel"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.address-form li .error {
+    color: red;
+    margin-left: 10px;
+    font-size: 13px;
+}
+
+/* Submit button style */
+.address-form button {
+    background-color: #337ab7;
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.address-form button:hover {
+    background-color: #286090;
+}

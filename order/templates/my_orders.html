@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block header %}
+<link rel="stylesheet" href="{% static 'css/my_orders.css' %}">
+{% endblock header %}
+
+{% block main %}
+<div class="orders-container">
+    <h2>My Orders</h2>
+    {% if orders %}
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order Number</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>£{{ order.total_amount }}</td>
+                    <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'order_detail' order.id %}" class="detail-btn">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have no orders yet.</p>
+    {% endif %}
+</div>
+{% endblock main %}

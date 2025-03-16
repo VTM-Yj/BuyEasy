@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Address Form{% endblock %}
+
+{% block main %}
+<div class="address-container">
+    <h2>{% if object %}Edit Address{% else %}Add New Address{% endif %}</h2>
+
+    <form method="post" class="address-form">
+        {% csrf_token %}
+        <ul>
+            <li>
+                <label for="{{ form.address_line1.id_for_label }}">Address line1</label>
+                {{ form.address_line1 }}
+                {% if form.address_line1.errors %}
+                    <div class="error">{{ form.address_line1.errors }}</div>
+                {% endif %}
+            </li>
+            <li>
+                <label for="{{ form.address_line2.id_for_label }}">Address line2</label>
+                {{ form.address_line2 }}
+                {% if form.address_line2.errors %}
+                    <div class="error">{{ form.address_line2.errors }}</div>
+                {% endif %}
+            </li>
+            <li>
+                <label for="{{ form.city.id_for_label }}">City</label>
+                {{ form.city }}
+                {% if form.city.errors %}
+                    <div class="error">{{ form.city.errors }}</div>
+                {% endif %}
+            </li>
+            <li>
+                <label for="{{ form.county.id_for_label }}">County</label>
+                {{ form.county }}
+                {% if form.county.errors %}
+                    <div class="error">{{ form.county.errors }}</div>
+                {% endif %}
+            </li>
+            <li>
+                <label for="{{ form.postcode.id_for_label }}">Postcode</label>
+                {{ form.postcode }}
+                {% if form.postcode.errors %}
+                    <div class="error">{{ form.postcode.errors }}</div>
+                {% endif %}
+            </li>
+            <li>
+                <label for="{{ form.phone.id_for_label }}">Phone</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                    <div class="error">{{ form.phone.errors }}</div>
+                {% endif %}
+            </li>
+        </ul>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+{% endblock main %}

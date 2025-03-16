@@ -1,0 +1,83 @@
+{% extends 'base.html'  %}
+{% load static %}
+
+
+
+{% block headerJs %}
+    <style>
+        .pageCls {
+            font-size: 28px;
+            color: green;
+        }
+    </style>
+{% endblock headerJs %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+    <div class="classes">
+        <ul class="classes-items">
+            {% for category in categoryList %}
+                <li class="items{% if category.id == currentCid %} active {% endif %}">
+                    <a href="{% url 'category' cid=category.id %}">{{ category.cname }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="goods-model">
+        <div class="goods-content">
+            {% for goods in goodsList %}
+                <div class="good">
+                    <a href="/goodsDetails/{{ goods.id }}">
+                        <img src="{{ MEDIA }}{{ goods.getImg }}" alt="" height="285px" width="285px">
+
+                        <p class="name">{{ goods.gname }}</p>
+                        <div class="price">
+                            <i>£</i>
+                            <p class="big">{{ goods.price }}</p>
+                            <s>£{{ goods.oldPrice }}</s>
+                        </div>
+                        <div class="sale">
+                            Sale
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="pager" style="text-align: center; font-size: 16px; overflow: hidden; margin-top: 10px;">
+        {% if goodsList.has_previous %}
+            <a href="/category/{{ currentCid }}/page/{{ goodsList.previous_page_number }}"
+               style="display: inline-block; padding: 5px; margin: 5px;">Previous</a>
+        {% endif %}
+
+        {% for page in pageList %}
+            <a href="/category/{{ currentCid }}/page/{{ page }}" {% if currentNumber == page %}
+               class="pageCls" {% endif %} style="display: inline-block; padding: 5px; margin: 5px;">{{ page }}</a>
+        {% endfor %}
+
+        {% if goodsList.has_next %}
+            <a href="/category/{{ currentCid }}/page/{{ goodsList.next_page_number }}"
+               style="display: inline-block; padding: 5px; margin: 5px;">Next</a>
+        {% endif %}
+
+    </div>
+{% endblock %}
+
+{% block footer_js %}
+    <script>
+        $('#pager').css({
+            'text-align': 'center',
+            'font-size': '16px',
+            'overflow': 'hidden',
+            'margin-top': '10px'
+        });
+        $('#pager a').css({
+            'display': 'inline-block',
+            'padding': '5px',
+            'margin': '5px'
+        });
+    </script>
+{% endblock %}

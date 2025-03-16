@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Address Management{% endblock %}
+
+{% block main %}
+<div class="address-container">
+    <h2>My Addresses</h2>
+    <a href="{% url 'address_add' %}">Add New Address</a>
+    <ul class="address-list">
+        {% for address in addresses %}
+        <li>
+            <div class="address-info">
+                {{ address.address_line1 }}, {{ address.city }} ({{ address.postcode }})
+            </div>
+            <div class="address-actions">
+                <a href="{% url 'address_edit' address.pk %}">Edit</a>
+                <a href="{% url 'address_delete' address.pk %}">Delete</a>
+            </div>
+        </li>
+        {% empty %}
+        <li>No addresses found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

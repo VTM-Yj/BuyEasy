@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Order{% endblock %}
+
+{% block header %}
+    <link rel="stylesheet" href="{% static 'css/order.css' %}">
+    <link rel="stylesheet" href="{% static 'css/order_form.css' %}">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .address-list {
+            display: flex;
+            flex-wrap: wrap; /* 允许多行 */
+            gap: 15px; /* 卡片之间的间距 */
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .address-list li {
+            flex: 0 0 200px; /* 每个地址卡片固定宽度 */
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .address-list li:hover {
+            background: #e0e0e0;
+        }
+
+        .address-list input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        /* Stripe 卡片样式 */
+        .stripe-input {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+    </style>
+{% endblock header %}
+
+{% block main %}
+    <div class="order-form-container">
+        <h2>Create Order</h2>
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <form id="order-form" method="post">
+            {% csrf_token %}
+
+            <!-- Section: Existing Addresses -->
+            <div class="address-section">
+                <h3>Select an Existing Address</h3>
+                {% if addresses %}
+                    <!-- order_form.html 中的地址循环片段 -->
+                    <ul class="address-list">
+                        {% for address in addresses %}
+                            <li>
+                                <label>
+                                    <input type="radio" name="selected_address_id" value="{{ address.id }}" required>
+                                    <div class="address-content">
+                                        {% if address.address_line1 %}<p>{{ address.address_line1 }}</p>{% endif %}
+                                        {% if address.address_line2 %}<p>{{ address.address_line2 }}</p>{% endif %}
+                                        {% if address.city %}<p>{{ address.city }}</p>{% endif %}
+                                        {% if address.county %}<p>{{ address.county }}</p>{% endif %}
+                                        {% if address.postcode %}<p>{{ address.postcode }}</p>{% endif %}
+                                    </div>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                {% else %}
+                    <!-- 当用户账户下没有地址时，显示提示及链接 -->
+                    <p>No saved addresses.
+                        <a href="{% url 'address_list' %}" class="add-address-link">Click here</a> to add one.</p>
+                {% endif %}
+            </div>
+
+
+            <!-- Payment (Stripe) -->
+            <div class="payment-section">
+                <h3>Payment Details</h3>
+                <!-- Stripe Card Element -->
+                <div id="card-element" class="stripe-input"></div>
+                <div id="card-errors" class="error-message" role="alert"></div>
+            </div>
+
+            <button type="submit" class="submit-button">Submit Order</button>
+        </form>
+    </div>
+
+    <!-- Stripe JS logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Replace with your real Stripe public key
+            var stripe = Stripe("{{ stripe_public_key }}");
+            var elements = stripe.elements({
+                // Hide postal code field
+                locale: 'en'
+            });
+
+            // Customize style
+            var style = {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            };
+
+            // Create card element with hidePostalCode
+            var card = elements.create('card', {
+                style: style,
+                hidePostalCode: true
+            });
+            card.mount('#card-element');
+
+            // Handle real-time validation errors
+            card.on('change', function (event) {
+                var displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            // Form submission
+            var form = document.getElementById('order-form');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                stripe.createToken(card).then(function (result) {
+                    if (result.error) {
+                        var errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                    } else {
+                        // Insert the token into the form
+                        var hiddenInput = document.createElement('input');
+                        hiddenInput.setAttribute('type', 'hidden');
+                        hiddenInput.setAttribute('name', 'stripe_token');
+                        hiddenInput.setAttribute('value', result.token.id);
+                        form.appendChild(hiddenInput);
+
+                        // Submit form
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock main %}
