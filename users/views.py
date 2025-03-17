@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views import View
 
+from order.models import Order
 from users.models import UserInfo
 from utils.code import *
 
@@ -49,7 +50,11 @@ class UserCenterView(View):
                 user = UserInfo.objects.get(pk=user_id)
             except UserInfo.DoesNotExist:
                 user = None
-        return render(request, 'center.html', {'current_user': user})
+
+        pending_orders = Order.objects.filter(user_id=user_id, status='paid')
+        pending_orders_count = pending_orders.count()
+
+        return render(request, 'center.html', {'current_user': user, 'pending_orders_count': pending_orders_count})
 
 
 class LogoutView(View):

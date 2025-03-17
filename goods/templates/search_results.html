@@ -150,45 +150,46 @@
 
 <!-- Main Content -->
 <div class="container my-4">
-    <div class="row">
-        <!-- Left Sidebar Filters -->
-        <aside class="col-md-3 mb-4">
-            <h5>Filters</h5>
-            <hr>
+  <div class="row">
+    <!-- Left Sidebar: Filters -->
+    <aside class="col-md-3 mb-4">
+      <h5>Filters</h5>
+      <hr>
+      <!-- Categories displayed in two columns -->
+      <ul class="list-unstyled" style="column-count: 2;">
+        {% for category in categoryList %}
+          <li>
+            <a href="{% url 'category' cid=category.id %}">{{ category.cname }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+      <hr>
+    </aside>
 
-            <!-- Categories: 如果仍然需要目录部分，可以参考下面 -->
-            <ul class="list-unstyled" style="column-count: 2;">
-                {% for category in categoryList %}
-                    <li>
-                        <a href="{% url 'category' cid=category.id %}">{{ category.cname }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-            <hr>
-        </aside>
-
-
-        <!-- Right Product List -->
-        <section class="col-md-9">
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                {% for goods in goodsList %}
-                    <div class="col">
-                        <div class="card h-100">
-                            <a href="{% url 'goods_details' goods.id %}">\
-                                <img src="{{ goods.getImg }}" class="card-img-top" alt="{{ goods.gname }}"
-                                     height="285px" width="285px">
-                            </a>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ goods.gname }}</h5>
-                                <p class="card-text">{{ goods.gDesc }}</p>
-                                <h6 class="text-primary">£{{ goods.price }}</h6>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+    <!-- Right Section: Search Results Product List -->
+    <section class="col-md-9">
+      <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for goods in goodsList %}
+          <div class="col">
+            <div class="card h-100">
+              <a href="{% url 'goods_details' goods.id %}">
+                  <img src="{{ goods.getImg }}" class="card-img-top" alt="{{ goods.gname }}" height="285px" width="285px">
+              </a>
+              <div class="card-body">
+                <h5 class="card-title">{{ goods.gname }}</h5>
+                <p class="card-text">{{ goods.gDesc }}</p>
+                <h6 class="text-primary">£{{ goods.price }}</h6>
+              </div>
             </div>
-        </section>
-    </div>
+          </div>
+        {% empty %}
+          <div class="col">
+            <p>No products found for your search query.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
 </div>
 
 <!-- Pagination -->

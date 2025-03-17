@@ -14,6 +14,7 @@ from address.models import Address
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+
 def create_order(request):
     user_id = request.session.get("user_id")
     if not user_id:
@@ -115,12 +116,6 @@ def order_detail(request, order_id):
     user_id = request.session.get('user_id')
     order = get_object_or_404(Order, id=order_id, user_id=user_id)
     return render(request, "order_detail.html", {"order": order})
-
-
-# orders/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Order
-from django.urls import reverse
 
 
 def my_orders(request):

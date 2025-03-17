@@ -100,12 +100,20 @@ class DBCartManager(CartManager):
         self.user = user
 
     def add(self, product_id, color_id, size_id, count, *args, **kwargs):
-        if self.user.cartitem_set.filter(
-                product_id=product_id,
-                color_id=color_id,
-                size_id=size_id
-        ).exists():
-            self.update(product_id, color_id, size_id, count, *args, **kwargs)
+        cart_item = self.user.cartitem_set.filter(
+            product_id=product_id,
+            color_id=color_id,
+            size_id=size_id
+        ).first()
+
+        if cart_item:
+            # 如果已存在，则更新数量
+            if cart_item.is_deleted:
+                cart_item.is_deleted = False
+                cart_item.count = int(count)  # 重置数量
+            else:
+                cart_item.count += int(count)
+            cart_item.save()
         else:
             CartItem.objects.create(
                 product_id=product_id,
@@ -141,8 +149,6 @@ class DBCartManager(CartManager):
 
     def clear(self):
         self.user.cartitem_set.all().delete()
-
-
 
 
 # 工厂方法：根据当前用户是否登录返回相应的 CartManager 对象

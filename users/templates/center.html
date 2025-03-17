@@ -16,7 +16,7 @@
                 </h3>
                 <div>
                     <ul>
-                        <li><a href="">Order</a></li>
+                        <li><a href="{% url 'my_orders' %}">Order</a></li>
                     </ul>
                     <ul>
                         <li><a href="{% url 'address_list' %}">Address</a></li>
@@ -40,14 +40,8 @@
                 <div class="bott">
                     <div class="clearfix">
                         <a href="" class="fl"><img src="{% static 'images/gxin1.jpg' %}"></a>
-                        <p class="fl"><span>Orders to be paid:<strong>0</strong></span>
-                            <a href="">View pending payment orders&gt;</a>
-                        </p>
-                    </div>
-                    <div class="clearfix">
-                        <a href="/users/center/" class="fl"><img src="{% static 'images/gxin2.jpg' %}"></a>
-                        <p class="fl"><span>Orders waiting to be received:<strong>0</strong></span>
-                            <a href="/users/center/">View pending orders&gt;</a>
+                        <p class="fl"><span>Orders to be paid:<strong>{{ pending_orders_count }}</strong></span>
+                            <a href="{% url 'my_orders' %}">View pending payment orders&gt;</a>
                         </p>
                     </div>
                 </div>

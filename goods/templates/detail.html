@@ -82,23 +82,14 @@
 
             <div class="detail-con-nav">
                 <ul class="detail-nav">
-                    <li class="active nav-item "><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Product
+                    <li class="active nav-item "><a href="">Product
                         Detail</a>
                     </li>
-                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Order Tracking</a>
+                    <li class="nav-item"><a href="">Order Tracking</a>
                     </li>
-                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Customer Service</a>
+                    <li class="nav-item"><a href="">Customer Service</a>
                     </li>
-                    <li class="nav-item"><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Mobile purchase</a>
-                    </li>
-                </ul>
-            </div>
 
-            <div class="sub-nav">
-                <ul class="subNav">
-                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Overall style</a></li>
-                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Model Show</a></li>
-                    <li><a href="http://127.0.0.1:8000/goodsdetails/?goodsid=26#">Details</a></li>
                 </ul>
             </div>
 
@@ -118,29 +109,25 @@
     </div>
 
 
-    <div class="goods-model" style="margin-right: -18px; text-align: center">
-        <img src="{% static 'images/recommend.png' %}" style="position: relative; left: -10px; top: 10px"
-             alt="Recommend">
-        <div class="goods-content">
-            {% for recommend in recommendList %}
-                <div class="good">
-                    <a href="{% url 'goods_details' recommend.id %}">
-                        <img src="{{ recommend.getImg }}" width="285px" height="285px" alt="Product Image">
-                        <p class="name">{{ recommend.gname }}</p>
-                        <div class="price">
-                            <i>£</i>
-                            <p class="big">{{ recommend.price }}</p>
-                            <s>£{{ recommend.oldPrice }}</s>
-                        </div>
-                        <div class="sale">
-                            Special Sale
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
+    <div class="goods-model" style="margin-right: -18px; text-align: center;">
+    <img src="{% static 'images/recommend.png' %}" style="position: relative; left: -10px; top: 10px;" alt="Recommend">
+    <div class="goods-content" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+        {% for recommend in recommendList %}
+            <div class="good" style="width: 285px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; text-align: center; transition: box-shadow 0.3s;">
+                <a href="{% url 'goods_details' recommend.id %}">
+                    <img src="{{ recommend.getImg }}" width="285px" height="285px" alt="Product Image" style="max-width: 100%; height: auto;">
+                    <p class="name">{{ recommend.gname }}</p>
+                    <div class="price" style="display: flex; align-items: baseline; justify-content: center; gap: 5px;">
+                        <i>£</i>
+                        <p class="big">{{ recommend.price }}</p>
+                        <s>£{{ recommend.oldPrice }}</s>
+                    </div>
+                    <div class="sale" style="margin-top: 5px; font-size: 14px; color: #ff464e;">Special Sale</div>
+                </a>
+            </div>
+        {% endfor %}
     </div>
-
+</div>
 
 
 

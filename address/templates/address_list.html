@@ -4,22 +4,24 @@
 {% block title %}Address Management{% endblock %}
 
 {% block main %}
-<div class="address-container">
-    <h2>My Addresses</h2>
-    <a href="{% url 'address_add' %}">Add New Address</a>
-    <ul class="address-list">
+<div class="address-container" style="padding: 20px; max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-bottom: 20px;">Addresses Management</h2>
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'address_add' %}" class="btn btn-primary">Add New Address</a>
+    </div>
+    <ul class="address-list list-group">
         {% for address in addresses %}
-        <li>
-            <div class="address-info">
-                {{ address.address_line1 }}, {{ address.city }} ({{ address.postcode }})
-            </div>
-            <div class="address-actions">
-                <a href="{% url 'address_edit' address.pk %}">Edit</a>
-                <a href="{% url 'address_delete' address.pk %}">Delete</a>
-            </div>
-        </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="address-info">
+                    <strong>{{ address.address_line1 }}</strong>, {{ address.city }} ({{ address.postcode }})
+                </div>
+                <div class="address-actions">
+                    <a href="{% url 'address_edit' address.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                    <a href="{% url 'address_delete' address.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </li>
         {% empty %}
-        <li>No addresses found.</li>
+            <li class="list-group-item">No addresses found.</li>
         {% endfor %}
     </ul>
 </div>

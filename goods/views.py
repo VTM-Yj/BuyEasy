@@ -1,3 +1,4 @@
+import random
 from http.client import responses
 
 from django.shortcuts import render
@@ -21,9 +22,10 @@ class IndexView(View):
 
         goodsList = Goods.objects.filter(category_id=cid).order_by('id')
 
-        pager = Paginator(goodsList, 8)
+        pager = Paginator(goodsList, 6)
 
         page_goodsList = pager.page(number)
+        sizeList = Size.objects.all()
 
         begin = (number - int(math.ceil(10.0 / 2)))
         if begin < 1:
@@ -41,9 +43,14 @@ class IndexView(View):
 
         pageList = range(begin, end + 1)
 
+        goods_with_images = Goods.objects.exclude(inventory__isnull=True).distinct()
+        banners = list(goods_with_images)
+        random.shuffle(banners)
+        banners = banners[:4]
+
         return render(request, 'index.html',
                       {'categoryList': categoryList, 'goodsList': page_goodsList, 'currentCid': cid,
-                       'pageList': pageList, 'currentNumber': number})
+                       'pageList': pageList, 'currentNumber': number, 'banners': banners, 'sizeList': sizeList})
 
 
 def recommendView(func):
@@ -51,7 +58,6 @@ def recommendView(func):
         # 从 cookie 中获取推荐商品的ID字符串，多个ID用空格分隔
         cookie_str = request.COOKIES.get('recommend', '')
         goodsIdList = [token for token in cookie_str.split() if token.strip()]
-
 
         # 获取当前商品对象，避免重复查询
         current_goods = Goods.objects.get(id=gid)
@@ -88,3 +94,26 @@ class GoodsDetailsView(View):
         goods_id = int(gid)
         goods = Goods.objects.get(id=goods_id)
         return render(request, 'detail.html', {'goods': goods, 'recommendList': recommendList})
+
+
+def SearchView(request):
+    query = request.GET.get('q', '')
+    # 这里假设搜索逻辑是根据商品名称和描述过滤
+    goodsList = Goods.objects.filter(gname__icontains=query)  # 可根据需要调整过滤条件
+    categoryList = Category.objects.all().order_by('id')
+    # 分页处理...
+    paginator = Paginator(goodsList, 6)
+    page_number = request.GET.get('page', 1)
+    page_goodsList = paginator.get_page(page_number)
+    # 计算分页页码范围...
+    pageList = range(1, paginator.num_pages + 1)
+    currentNumber = page_goodsList.number
+
+    return render(request, 'search_results.html', {
+        'goodsList': page_goodsList,
+        'categoryList': categoryList,
+        'currentCid': 0,  # 可根据实际情况设置
+        'pageList': pageList,
+        'currentNumber': currentNumber,
+        'q': query,
+    })

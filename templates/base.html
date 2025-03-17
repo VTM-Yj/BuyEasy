@@ -3,9 +3,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}BuyEasy{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS for Header -->
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
-    <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link rel="stylesheet" href="{% static 'css/detail.css' %}">
     <link rel="stylesheet" href="{% static 'css/carts.css' %}">
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
@@ -15,53 +17,113 @@
     <link rel="stylesheet" href="{% static 'css/order_form.css' %}">
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/carts.js' %}"></script>
+    <style>
+        /* Navigation bar styles */
+        .navbar-custom {
+            background-color: #f8f9fa;
+            padding: 10px 0;
+        }
+
+        .navbar-brand, .nav-link.home-link {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .navbar-nav .nav-item {
+            margin-left: 20px;
+        }
+
+        .navbar-nav .nav-item .cart-icon,
+        .navbar-nav .nav-item .home-icon,
+        .navbar-nav .nav-item .user-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 5px;
+        }
+
+        /* Center and widen search box */
+        .navbar-search {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .navbar-search input[type="search"] {
+            width: 100%;
+            border-radius: 20px;
+            padding: 10px 20px;
+        }
+    </style>
     {% block header %}{% endblock header %}
 </head>
 <body>
-<div class="head">
-    <div class="head-in" style="width: 1600px;">
-        <ul class="options" style="width: 600px;">
-            <li class="sub"><a href="{% url 'my_orders' %}">My Order</a></li>
-            <li class="sub"><a href="">Customer Service</a></li>
-            <li class="sub"><a href="/cart/queryAll/">Cart</a></li>
-        </ul>
-        {% if current_user %}
-            <div class="register">Welcome <a href="/users/center/">{{ current_user.user_name }}</a></div>
-        {% else %}
-            <div class="register"><a href="{% url 'register' %}">Register</a></div>
-            <div class="sign"><a href="{% url 'login' %}">Log in</a></div>
-        {% endif %}
-
-
-    </div>
-    <div class="search">
-        <ul class="items">
-            <li class="item">
-                <a href="{% url 'category' cid=2 %}">
-                    <img src="{% static 'images/1_09.png' %}" alt="10:00开抢">
-                    <p>10:00开抢</p>
-                </a>
-            </li>
-            <li class="item">
-                <a href="{% url 'category' cid=2 %}">
-                    <img src="{% static 'images/1_11.png' %}" alt="买手砍价">
-                    <p>买手砍价</p>
-                </a>
-            </li>
-            <li class="item">
-                <a href="{% url 'category' cid=2 %}">
-                    <img src="{% static 'images/1_13.png' %}" alt="验货质检">
-                    <p>验货质检</p>
-                </a>
-            </li>
-        </ul>
-        <div class="input">
-            <input type="text" id="search_input" name="search" placeholder="Search">
-            <img src="{% static 'images/1_06.png' %}" alt="Search">
+<!-- Top Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <div class="container-fluid">
+        <!-- Home link -->
+        <a class="navbar-brand home-link" href="{% url 'index' %}">BuyEasy</a>
+        <!-- Mobile toggle button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarHeaderContent"
+                aria-controls="navbarHeaderContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Collapsible content -->
+        <div class="collapse navbar-collapse" id="navbarHeaderContent">
+            <!-- Centered and widened search box -->
+            <form class="d-flex navbar-search mx-auto" action="{% url 'search' %}" method="get">
+                <input class="form-control" type="search" name="q" placeholder="Search for products"
+                       aria-label="Search">
+                <button class="btn btn-outline-success ms-2" type="submit">Search</button>
+            </form>
+            <!-- Right-side: Home icon, Cart, and User Account Dropdown -->
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <!-- Home icon link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">
+                        <img src="{% static 'images/home1.png' %}" alt="Home" class="home-icon">
+                    </a>
+                </li>
+                <!-- Cart link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'queryAll' %}">
+                        <img src="{% static 'images/cart1.png' %}" alt="Cart" class="cart-icon">
+                    </a>
+                </li>
+                <!-- User Account Dropdown -->
+                <li class="nav-item dropdown">
+                    {% if current_user %}
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            {{ current_user.user_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'center' %}">Account Center</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    {% else %}
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <img src="{% static 'images/user.png' %}" alt="User" class="user-icon">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'login' %}">Log in</a></li>
+                            <li><a class="dropdown-item" href="{% url 'register' %}">Register</a></li>
+                        </ul>
+                    {% endif %}
+                </li>
+            </ul>
         </div>
     </div>
-    {% block main %}{% endblock main %}
-    {% block footer_js %}{% endblock footer_js %}
-</div>
+</nav>
+
+{% block main %}
+    <!-- Child templates can insert main content here -->
+{% endblock main %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block footer_js %}{% endblock footer_js %}
 </body>
 </html>
