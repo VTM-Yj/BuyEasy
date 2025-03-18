@@ -22,7 +22,7 @@ class IndexView(View):
 
         goodsList = Goods.objects.filter(category_id=cid).order_by('id')
 
-        pager = Paginator(goodsList, 6)
+        pager = Paginator(goodsList, 3)
 
         page_goodsList = pager.page(number)
         sizeList = Size.objects.all()
@@ -63,13 +63,15 @@ def recommendView(func):
         current_goods = Goods.objects.get(id=gid)
 
         # 构造推荐列表：排除当前商品，同时要求同一类别；最多取前4个
-        recommendObjList = [
-                               Goods.objects.get(id=gsId)
-                               for gsId in goodsIdList
-                               if
-                               gsId != str(gid) and Goods.objects.get(id=gsId).category_id == current_goods.category_id
-                           ][:4]
-
+        recommendObjList = []
+        for gsId in goodsIdList:
+            try:
+                product = Goods.objects.get(id=gsId)
+                if str(product.id) != str(gid) and product.category_id == current_goods.category_id:
+                    recommendObjList.append(product)
+            except Goods.DoesNotExist:
+                continue
+        recommendObjList = recommendObjList[:4]
         # 调用原函数，将推荐列表传入
         response = func(self, request, gid, recommendObjList, *args, **kwargs)
 
@@ -102,7 +104,7 @@ def SearchView(request):
     goodsList = Goods.objects.filter(gname__icontains=query)  # 可根据需要调整过滤条件
     categoryList = Category.objects.all().order_by('id')
     # 分页处理...
-    paginator = Paginator(goodsList, 6)
+    paginator = Paginator(goodsList, 3)
     page_number = request.GET.get('page', 1)
     page_goodsList = paginator.get_page(page_number)
     # 计算分页页码范围...

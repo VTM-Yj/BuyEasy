@@ -20,7 +20,12 @@ class Goods(models.Model):
         return f'Goods: {self.gname}'
 
     def getImg(self):
-        return self.inventory_set.first().color.colorUrl
+        inv = self.inventory_set.first()
+        if inv and inv.color and inv.color.colorUrl:
+            return inv.color.colorUrl
+        else:
+            # 返回默认图片的URL（可以替换成你实际的默认图片路径）
+            return "/static/images/B5_03.png"
 
     @property
     def getColorsList(self):
