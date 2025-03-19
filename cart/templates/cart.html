@@ -35,8 +35,9 @@
                         <li class="list_con">
                             <div class="list_img">
                                 <a href="javascript:;">
-                                    <!-- 示例中显示商品描述对应的图片，这里以颜色图片为例 -->
-                                    <img src="{{ cart.getColor.colorUrl }}" alt="">
+                                    <!-- Display the product image related to the selected color -->
+                                    <img src="{{ cart.getColor.colorUrl }}" alt=""
+                                         style="max-width: 100px; max-height: 100px; object-fit: contain;">
                                 </a>
                             </div>
                             <div class="list_text">
@@ -48,7 +49,7 @@
                             <p>Size: {{ cart.getSize.sName }}</p>
                         </li>
                         <li class="list_price">
-                            <!-- 单价统一使用£ -->
+                            <!-- Display the product price -->
                             <p class="price">£{{ cart.getGoods.price }}</p>
                         </li>
                         <li class="list_amount">
@@ -65,7 +66,7 @@
                             </div>
                         </li>
                         <li class="list_sum">
-                            <!-- 总计：调用后端方法，返回数值，再在前端模板中添加£ -->
+                            <!-- Calculate and display the total price -->
                             <p class="sum_price">£{{ cart.getGoods.getSubTotal }}</p>
                         </li>
                         <li class="list_op">
@@ -103,205 +104,29 @@
 
 {% block footer_js %}
     <script>
-        // cart.js
         $(document).ready(function () {
-            // 全局变量（尽量在当前作用域中定义）
+            // Define global checkbox elements
             var $allCheckbox = $('input[type="checkbox"]'),
                 $wholeCheckbox = $('.whole_check'),
                 $cartBox = $('.cartBox'),
-                $shopCheckbox = $('.shopChoice'),
                 $sonCheckbox = $('.son_check');
 
-            // ------------------------------
-            // 1. Checkbox 选中样式处理
-            // ------------------------------
-            $allCheckbox.on('click', function () {
-                $(this).next('label').toggleClass('mark', $(this).is(':checked'));
-            });
-
+            // Handle global checkbox selection
             $wholeCheckbox.on('click', function () {
                 var $checkboxes = $cartBox.find('input[type="checkbox"]');
-                if ($(this).is(':checked')) {
-                    $checkboxes.prop("checked", true).next('label').addClass('mark');
-                } else {
-                    $checkboxes.prop("checked", false).next('label').removeClass('mark');
-                }
+                var isChecked = $(this).is(':checked');
+                $checkboxes.prop("checked", isChecked);
                 updateTotal();
             });
 
+            // Handle individual product selection
             $sonCheckbox.on('click', function () {
-                // 如果所有单个商品都选中，则全局全选也选中
-                $wholeCheckbox.prop("checked", $sonCheckbox.filter(':checked').length === $sonCheckbox.length)
-                    .next('label').toggleClass('mark', $sonCheckbox.filter(':checked').length === $sonCheckbox.length);
+                var allChecked = $sonCheckbox.length === $sonCheckbox.filter(':checked').length;
+                $wholeCheckbox.prop("checked", allChecked);
                 updateTotal();
             });
 
-            $shopCheckbox.on('click', function () {
-                var $parentCartBox = $(this).closest('.cartBox');
-                if ($(this).is(':checked')) {
-                    $parentCartBox.find('.son_check').prop("checked", true).next('label').addClass('mark');
-                } else {
-                    $parentCartBox.find('.son_check').prop("checked", false).next('label').removeClass('mark');
-                }
-                // 如果所有店铺都选中，则全局全选也选中
-                $wholeCheckbox.prop("checked", $shopCheckbox.filter(':checked').length === $shopCheckbox.length)
-                    .next('label').toggleClass('mark', $shopCheckbox.filter(':checked').length === $shopCheckbox.length);
-                updateTotal();
-            });
-
-            $cartBox.each(function () {
-                var $thisCartBox = $(this);
-                var $childChecks = $thisCartBox.find('.son_check');
-                $childChecks.on('click', function () {
-                    $thisCartBox.find('.shopChoice').prop("checked", $childChecks.filter(':checked').length === $childChecks.length)
-                        .next('label').toggleClass('mark', $childChecks.filter(':checked').length === $childChecks.length);
-                    updateTotal();
-                });
-            });
-
-            // ------------------------------
-            // 2. 商品数量控制
-            // ------------------------------
-            // 封装数量更新显示逻辑
-            function updateItemCount($order, newCount) {
-                var $input = $order.find('.sum'),
-                    $sumPriceElem = $order.find('.sum_price'),
-                    priceText = $order.find('.price').text(), // e.g. "£10"
-                    unitPrice = parseFloat(priceText.substring(1)) || 0,
-                    newSubtotal = newCount * unitPrice;
-                $input.val(newCount);
-                $sumPriceElem.text('£' + newSubtotal);
-            }
-
-            // 封装 Ajax 数量更新请求
-            function updateQuantityOnServer(flag, $order) {
-                var csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val(),
-                    product_id = $order.attr('product_id'),
-                    color_id = $order.attr('color_id'),
-                    size_id = $order.attr('size_id');
-                $.ajax({
-                    url: '{% url "addCart" %}',
-                    type: 'post',
-                    data: {
-                        product_id: product_id,
-                        color_id: color_id,
-                        size_id: size_id,
-                        flag: flag, // 'plus' 或 'minus'
-                        csrfmiddlewaretoken: csrfmiddlewaretoken
-                    },
-                    success: function (response) {
-                        console.log("Quantity update (" + flag + ") success:", response);
-                    },
-                    error: function () {
-                        console.error("Quantity update (" + flag + ") failed");
-                    }
-                });
-            }
-
-            // Plus 按钮
-            $('.plus').off('click').on('click', function (event) {
-                event.preventDefault();
-                var $order = $(this).closest('.order_lists');
-                var $input = $(this).prev('input');
-                var currentCount = parseInt($input.val(), 10) || 0;
-                var newCount = currentCount + 1;
-                updateItemCount($order, newCount);
-                $order.find('.reduce').removeClass('reSty');
-                updateTotal();
-                updateQuantityOnServer('plus', $order);
-            });
-
-            // Reduce 按钮
-            $('.reduce').off('click').on('click', function (event) {
-                event.preventDefault();
-                var $order = $(this).closest('.order_lists');
-                var $input = $(this).next('input');
-                var currentCount = parseInt($input.val(), 10) || 0;
-                if (currentCount <= 1) {
-                    $(this).addClass('reSty');
-                    return;
-                }
-                var newCount = currentCount - 1;
-                updateItemCount($order, newCount);
-                if (newCount === 1) {
-                    $(this).addClass('reSty');
-                }
-                updateTotal();
-                updateQuantityOnServer('minus', $order);
-            });
-
-            // 数量输入实时更新
-            $('.sum').off('keyup').on('keyup', function () {
-                var $order = $(this).closest('.order_lists');
-                var $input = $(this);
-                var $sumPriceElem = $order.find('.sum_price');
-                var priceText = $order.find('.price').text();
-                var unitPrice = parseFloat(priceText.substring(1)) || 0;
-                $input.val($input.val().replace(/\D|^0/g, ''));
-                var count = parseInt($input.val(), 10) || 1;
-                var newSubtotal = count * unitPrice;
-                $input.attr('value', count);
-                $sumPriceElem.text('£' + newSubtotal);
-                updateTotal();
-                // 可选：可在失去焦点时发送 Ajax 请求同步数量
-            });
-
-            // ------------------------------
-            // 3. 删除操作：模态框处理
-            // ------------------------------
-            // 声明全局变量用于删除操作
-            var $currentOrder, $currentOrderContent;
-            $('.delBtn').off('click').on('click', function () {
-                $currentOrder = $(this).closest('.order_lists');
-                $currentOrderContent = $currentOrder.closest('.order_content');
-                $('.model_bg, .my_model').fadeIn(300);
-            });
-
-            $('.closeModel, .dialog-close').off('click').on('click', function () {
-                closeModal();
-            });
-
-            // 封装关闭模态框函数，挂载到全局
-            window.closeModal = function () {
-                $('.model_bg, .my_model').fadeOut(300);
-            };
-
-            // 确认删除操作
-            $('.dialog-sure').off('click').on('click', function (event) {
-                event.preventDefault();
-                var csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val();
-                var product_id = $currentOrder.attr('product_id');
-                var color_id = $currentOrder.attr('color_id');
-                var size_id = $currentOrder.attr('size_id');
-                $.ajax({
-                    type: 'post',
-                    url: '{% url "addCart" %}',
-                    data: {
-                        product_id: product_id,
-                        color_id: color_id,
-                        size_id: size_id,
-                        csrfmiddlewaretoken: csrfmiddlewaretoken,
-                        flag: 'delete'
-                    },
-                    async: false,
-                    success: function (response) {
-                        console.log("Delete success:", response);
-                        $currentOrder.remove();
-                        if ($currentOrderContent && $currentOrderContent.html().trim().length === 0) {
-                            $currentOrderContent.closest('.cartBox').remove();
-                        }
-                        closeModal();
-                        updateTotal();
-                    },
-                    error: function (event) {
-                        event.stopImmediatePropagation();
-                    }
-                });
-            });
-
-            // ------------------------------
-            // 4. 总计计算函数
-            // ------------------------------
+            // Function to update the cart total
             function updateTotal() {
                 var totalMoney = 0, totalCount = 0;
                 $('.son_check:checked').each(function () {
@@ -313,12 +138,60 @@
                 });
                 $('.total_text').text('£' + totalMoney.toFixed(2));
                 $('.piece_num').text(totalCount);
-                $('.calBtn a').toggleClass('btn_sty', totalMoney !== 0 && totalCount !== 0);
             }
 
-            // ------------------------------
-            // 5. 结算按钮：收集选中购物项信息
-            // ------------------------------
+            // Function to handle product quantity updates
+            function updateItemCount($order, newCount) {
+                var $input = $order.find('.sum'),
+                    $sumPriceElem = $order.find('.sum_price'),
+                    priceText = $order.find('.price').text(),
+                    unitPrice = parseFloat(priceText.substring(1)) || 0,
+                    newSubtotal = newCount * unitPrice;
+                $input.val(newCount);
+                $sumPriceElem.text('£' + newSubtotal);
+            }
+
+            // Plus button click event to increase quantity
+            $('.plus').on('click', function (event) {
+                event.preventDefault();
+                var $order = $(this).closest('.order_lists');
+                var $input = $(this).prev('input');
+                var newCount = parseInt($input.val(), 10) + 1;
+                updateItemCount($order, newCount);
+                updateTotal();
+            });
+
+            // Reduce button click event to decrease quantity
+            $('.reduce').on('click', function (event) {
+                event.preventDefault();
+                var $order = $(this).closest('.order_lists');
+                var $input = $(this).next('input');
+                var currentCount = parseInt($input.val(), 10);
+                if (currentCount > 1) {
+                    updateItemCount($order, currentCount - 1);
+                    updateTotal();
+                }
+            });
+
+            // Delete button click event
+            $('.delBtn').on('click', function () {
+                var $order = $(this).closest('.order_lists');
+                $('.model_bg, .my_model').fadeIn(300);
+
+                // Confirm delete action
+                $('.dialog-sure').on('click', function () {
+                    $order.remove();
+                    $('.model_bg, .my_model').fadeOut(300);
+                    updateTotal();
+                });
+
+                // Close delete modal
+                $('.closeModel, .dialog-close').on('click', function () {
+                    $('.model_bg, .my_model').fadeOut(300);
+                });
+            });
+
+            // Order confirmation button click event
             $('#jiesuan').off('click').on('click', function () {
                 var selectedItems = [];
                 $('.son_check:checked').each(function () {
@@ -335,7 +208,7 @@
                 window.location.href = url;
             });
 
-            // 初始调用总计
+            // Initialize total calculation
             updateTotal();
         });
     </script>

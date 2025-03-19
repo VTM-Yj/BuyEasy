@@ -20,7 +20,6 @@ def create_order(request):
     if not user_id:
         return redirect("/users/login/")
 
-    # 获取用户地址
     user_addresses = Address.objects.filter(user_id=user_id)
 
     if request.method == "POST":
@@ -33,36 +32,32 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "No address selected. Please add or select an address."
+                    "error": "未选择地址，请添加或选择一个地址。"
                 })
 
-            # 获取购物车数据
             cart_manager = getCartManger(request)
             cart_items = cart_manager.queryAll()
-
             if not cart_items:
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "Your cart is empty."
+                    "error": "购物车为空，无法下单。"
                 })
 
             total_amount = sum(item.getSubTotal() for item in cart_items)
 
-            # 获取 Stripe Token
             stripe_token = request.POST.get("stripe_token")
             if not stripe_token:
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "Stripe token missing. Please try again."
+                    "error": "支付信息错误，请重试。"
                 })
 
             try:
                 with transaction.atomic():
-                    # 创建订单
+                    # 创建订单，订单号自动递增
                     order = Order.objects.create(
-                        order_number=str(uuid.uuid4()),
                         user_id=user_id,
                         total_amount=total_amount,
                         status="pending",
@@ -83,14 +78,15 @@ def create_order(request):
                     # 清空购物车
                     cart_manager.clear()
 
-                    # Stripe 收款
+                    # 进行 Stripe 支付
                     charge = stripe.Charge.create(
-                        amount=int(order.total_amount * 100),  # 分为单位
+                        amount=int(order.total_amount * 100),
                         currency="usd",
                         source=stripe_token,
                         description=f"Order {order.order_number}"
                     )
-                    # 如果成功，则订单状态更新
+
+                    # 更新订单状态
                     order.status = "paid"
                     order.save()
 
@@ -99,7 +95,7 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": f"Payment failed: {e}"
+                    "error": f"支付失败: {e}"
                 })
 
     else:

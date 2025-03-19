@@ -56,8 +56,14 @@ class SessionCartManager(CartManager):
     def update(self, product_id, color_id, size_id, step, *args, **kwargs):
         key = self.__get_key(product_id, color_id, size_id)
         if key in self.session[self.cart_name]:
-            cartitem = self.session[self.cart_name][key]
-            cartitem['count'] = int(cartitem['count']) + int(step)
+            # 先解码 JSON
+            cartitem = jsonpickle.decode(self.session[self.cart_name][key])
+
+            # 更新数量
+            cartitem.count = int(cartitem.count) + int(step)
+
+            # 重新编码后存回 session
+            self.session[self.cart_name][key] = jsonpickle.encode(cartitem)
         else:
             raise Exception('SessionCartManager update error: key not found')
 

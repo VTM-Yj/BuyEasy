@@ -19,13 +19,15 @@
                     <input type="hidden" name="time" id="time">
                     <div class="login-input-box">
                         {% csrf_token %}
-
+                        {% if error %}
+                            <p style="color: red; text-align: center; font-size: 16px;">{{ error }}</p>
+                        {% endif %}
                         <input type="text" id="user_name" name="user_name" value="" class="login-admin active"
                                placeholder="Email or Username">
                         <span style="color:red;" id="aSpan"></span>
 
                         <input type="password" id="pwd" name="pwd" value="" class="login-password"
-                        placeholder="Password">
+                               placeholder="Password">
                         <span style="color:red;" id="pSpan"></span>
 
                         <input type="text" style="height:36px;width: 100px;" id="code"

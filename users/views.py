@@ -44,12 +44,12 @@ class CheckUserNameView(View):
 class UserCenterView(View):
     def get(self, request):
         user_id = request.session.get('user_id')
-        user = None
-        if user_id:
-            try:
-                user = UserInfo.objects.get(pk=user_id)
-            except UserInfo.DoesNotExist:
-                user = None
+        if not user_id:
+            return HttpResponseRedirect(reverse('login'))
+        try:
+            user = UserInfo.objects.get(pk=user_id)
+        except UserInfo.DoesNotExist:
+            return HttpResponseRedirect(reverse('login'))
 
         pending_orders = Order.objects.filter(user_id=user_id, status='paid')
         pending_orders_count = pending_orders.count()
