@@ -1,0 +1,86 @@
+/* order_detail.css */
+
+/* Container for the order detail page */
+.order-detail-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    font-family: Arial, sans-serif;
+    color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Page heading */
+.order-detail-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+/* Basic info styling */
+.basic-info p {
+    margin: 8px 0;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.basic-info strong {
+    color: #666;
+}
+
+/* Items heading */
+.order-detail-container h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #444;
+}
+
+/* Table styling */
+.order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.order-items-table th,
+.order-items-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.order-items-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.order-items-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.order-items-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Price alignment */
+.order-items-table td:nth-child(3),
+.order-items-table td:nth-child(4) {
+    color: #d9534f; /* Price color, e.g. red-ish */
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .order-items-table th,
+    .order-items-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+    .basic-info p {
+        font-size: 14px;
+    }
+}
