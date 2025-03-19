@@ -82,10 +82,10 @@ WSGI_APPLICATION = 'BuyEasy.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'buyeasy',
-        "USER": "root",
-        "PASSWORD": "123456",
-        "HOST": "127.0.0.1",
+        'NAME': 'buyeasyproject$buyeasydb',
+        "USER": "buyeasyproject",
+        "PASSWORD": "buyeasy1234",
+        "HOST": "buyeasyproject.mysql.pythonanywhere-services.com",
         "PORT": "3306",
         'OPTIONS': {
             'charset': 'utf8mb4',
