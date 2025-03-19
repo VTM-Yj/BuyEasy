@@ -20,18 +20,18 @@ class CartManager(object):
         pass
 
 
-# 当前用户未登录时使用 Session 管理购物车
+# Use Session to manage the cart when the user is not logged in
 class SessionCartManager(CartManager):
     cart_name = 'cart'
 
     def __init__(self, session):
         self.session = session
-        # 如果购物车不存在则创建
+        # Create a cart if it does not exist
         if self.cart_name not in self.session:
             self.session[self.cart_name] = OrderedDict()
 
     def __get_key(self, product_id, color_id, size_id):
-        # 使用 f-string 拼接参数，确保唯一性
+        # Use f-string to concatenate parameters to ensure uniqueness
         return f"{product_id},{color_id},{size_id}"
 
     def add(self, product_id, color_id, size_id, count, *args, **kwargs):
@@ -56,32 +56,39 @@ class SessionCartManager(CartManager):
     def update(self, product_id, color_id, size_id, step, *args, **kwargs):
         key = self.__get_key(product_id, color_id, size_id)
         if key in self.session[self.cart_name]:
-            # 先解码 JSON
+            # Decode JSON first
             cartitem = jsonpickle.decode(self.session[self.cart_name][key])
 
-            # 更新数量
+            # Update the quantity
             cartitem.count = int(cartitem.count) + int(step)
 
-            # 重新编码后存回 session
+            # Re-encode and save back to session
             self.session[self.cart_name][key] = jsonpickle.encode(cartitem)
         else:
             raise Exception('SessionCartManager update error: key not found')
 
     def queryAll(self, *args, **kwargs):
-        # 返回购物车中所有项的字典列表
+        # Return a list of all cart items
         return list(self.session[self.cart_name].values())
 
     def migrateSession2DB(self):
-        # 注意：这里假设 session 中的 'user' 存储的是用户对象（或用户ID），具体需要根据项目实际调整
         if 'user' in self.session:
             user = self.session.get('user')
             for cartitem in self.queryAll():
-                # 检查数据库中是否已有该购物项
-                if CartItem.objects.filter(
-                        product_id=cartitem['product_id'],
-                        color_id=cartitem['color_id'],
-                        size_id=cartitem['size_id']
-                ).count() == 0:
+                existing_item = CartItem.objects.filter(
+                    product_id=cartitem['product_id'],
+                    color_id=cartitem['color_id'],
+                    size_id=cartitem['size_id'],
+                    user=user
+                ).first()
+
+                if existing_item:
+                    # ✅ 避免重复：更新数量，而不是新建
+                    existing_item.count += int(cartitem['count'])
+                    existing_item.is_deleted = False  # 重新激活删除的商品
+                    existing_item.save()
+                else:
+                    # ✅ 只有当数据库中 **没有此商品** 时才新建
                     CartItem.objects.create(
                         product_id=cartitem['product_id'],
                         color_id=cartitem['color_id'],
@@ -89,18 +96,13 @@ class SessionCartManager(CartManager):
                         count=cartitem['count'],
                         user=user
                     )
-                else:
-                    item = CartItem.objects.get(
-                        product_id=cartitem['product_id'],
-                        color_id=cartitem['color_id'],
-                        size_id=cartitem['size_id']
-                    )
-                    item.count = int(item.count) + int(cartitem['count'])
-                    item.save()
-            del self.session[self.cart_name]
+
+            # ✅ 清空 session 购物车，防止重复迁移
+            self.session.pop(self.cart_name, None)
+            self.session.modified = True
 
 
-# 用户已登录时使用数据库管理购物车
+# Use Database to manage the cart when the user is logged in
 class DBCartManager(CartManager):
     def __init__(self, user):
         self.user = user
@@ -113,10 +115,10 @@ class DBCartManager(CartManager):
         ).first()
 
         if cart_item:
-            # 如果已存在，则更新数量
+            # If the item exists, update the quantity
             if cart_item.is_deleted:
                 cart_item.is_deleted = False
-                cart_item.count = int(count)  # 重置数量
+                cart_item.count = int(count)  # Reset quantity
             else:
                 cart_item.count += int(count)
             cart_item.save()
@@ -157,7 +159,7 @@ class DBCartManager(CartManager):
         self.user.cartitem_set.all().delete()
 
 
-# 工厂方法：根据当前用户是否登录返回相应的 CartManager 对象
+# Factory Method: Returns the appropriate CartManager object based on the user's login status
 def getCartManger(request):
     if request.session.get('user_id'):
         user = UserInfo.objects.get(pk=request.session.get('user_id'))

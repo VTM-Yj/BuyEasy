@@ -32,7 +32,7 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "未选择地址，请添加或选择一个地址。"
+                    "error": "Please select an address。"
                 })
 
             cart_manager = getCartManger(request)
@@ -41,7 +41,7 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "购物车为空，无法下单。"
+                    "error": "Cart is empty"
                 })
 
             total_amount = sum(item.getSubTotal() for item in cart_items)
@@ -51,12 +51,12 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": "支付信息错误，请重试。"
+                    "error": "Please re-try。"
                 })
 
             try:
                 with transaction.atomic():
-                    # 创建订单，订单号自动递增
+                    # Create an order, the order number will automatically increase
                     order = Order.objects.create(
                         user_id=user_id,
                         total_amount=total_amount,
@@ -64,7 +64,7 @@ def create_order(request):
                         shipping_address=str(address)
                     )
 
-                    # 创建订单项
+                    # Create a line item
                     for item in cart_items:
                         OrderItem.objects.create(
                             order=order,
@@ -75,10 +75,10 @@ def create_order(request):
                             subtotal=item.getSubTotal()
                         )
 
-                    # 清空购物车
+                    # Empty Cart
                     cart_manager.clear()
 
-                    # 进行 Stripe 支付
+                    # Make a Stripe payment
                     charge = stripe.Charge.create(
                         amount=int(order.total_amount * 100),
                         currency="usd",
@@ -86,7 +86,7 @@ def create_order(request):
                         description=f"Order {order.order_number}"
                     )
 
-                    # 更新订单状态
+                    # Update order status
                     order.status = "paid"
                     order.save()
 
@@ -95,7 +95,7 @@ def create_order(request):
                 return render(request, "order_form.html", {
                     "form": form,
                     "addresses": user_addresses,
-                    "error": f"支付失败: {e}"
+                    "error": f"Payment failed: {e}"
                 })
 
     else:
@@ -115,12 +115,12 @@ def order_detail(request, order_id):
 
 
 def my_orders(request):
-    # 获取当前用户的ID（假设保存在 session 中）
+    # Get the current user's ID
     user_id = request.session.get("user_id")
     if not user_id:
         return redirect("/users/login/")
 
-    # 查询当前用户的所有订单，按创建时间倒序排列
+    # Query all orders of the current user, sorted in descending order by creation time
     orders = Order.objects.filter(user_id=user_id).order_by("-created_at")
 
     return render(request, "my_orders.html", {"orders": orders})

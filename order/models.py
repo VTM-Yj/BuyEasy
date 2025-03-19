@@ -1,8 +1,10 @@
 # orders/models.py
+import uuid
+
 from django.db import models
 
 class Order(models.Model):
-    order_number = models.CharField(max_length=255, unique=True)  # 订单编号
+    order_number = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # 订单编号
     user_id = models.PositiveIntegerField()  # 购买用户
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # 总金额
     status = models.CharField(max_length=20, default="pending")  # 订单状态

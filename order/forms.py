@@ -3,10 +3,10 @@ from django import forms
 
 
 class OrderForm(forms.Form):
-    # 如果用户选择已有地址，则该字段存放地址ID
+    # If the user selects an existing address, this field stores the address ID
     selected_address_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
 
-    # 新地址字段，如果用户没有选择已有地址，则需要填写新地址
+    # New address field, if the user does not select an existing address, then the new address needs to be filled in
     new_address_line1 = forms.CharField(required=False,
                                         widget=forms.TextInput(attrs={'placeholder': 'Street address and number'}))
     new_address_line2 = forms.CharField(required=False,

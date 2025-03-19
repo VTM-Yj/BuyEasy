@@ -17,9 +17,6 @@ label{
     height: 12px;
     cursor: pointer;
 }
-label.mark{
-    background: url("../images/mark1.png") no-repeat -1px -1px;
-}
 
 a:hover{
     color: #ff464e;
@@ -401,3 +398,4 @@ a:hover{
     border: 1px solid #d9d9d9;
     color: #3c3c3c;
 }
+

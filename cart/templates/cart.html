@@ -2,6 +2,24 @@
 {% load static %}
 
 {% block title %}Cart{% endblock title %}
+{% block header %}
+    <style>
+        #jiesuan {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        #jiesuan:hover {
+            background-color: #dc3545;
+        }
+
+    </style>
+{% endblock header %}
 
 {% block main %}
     <section class="cartMain">
@@ -105,6 +123,9 @@
 {% block footer_js %}
     <script>
         $(document).ready(function () {
+            initPrices();  // Calculate the initial price of each item when the page loads
+            updateTotal(); // Calculate the total shopping cart price
+
             // Define global checkbox elements
             var $allCheckbox = $('input[type="checkbox"]'),
                 $wholeCheckbox = $('.whole_check'),
@@ -112,7 +133,7 @@
                 $sonCheckbox = $('.son_check');
 
             // Handle global checkbox selection
-            $wholeCheckbox.on('click', function () {
+            $wholeCheckbox.off('click').on('click', function () {
                 var $checkboxes = $cartBox.find('input[type="checkbox"]');
                 var isChecked = $(this).is(':checked');
                 $checkboxes.prop("checked", isChecked);
@@ -120,11 +141,25 @@
             });
 
             // Handle individual product selection
-            $sonCheckbox.on('click', function () {
+            $sonCheckbox.off('click').on('click', function () {
                 var allChecked = $sonCheckbox.length === $sonCheckbox.filter(':checked').length;
                 $wholeCheckbox.prop("checked", allChecked);
                 updateTotal();
             });
+
+            // Calculate subtotals for all items when the page loads
+            function initPrices() {
+                $('.order_lists').each(function () {
+                    var $order = $(this);
+                    var $input = $order.find('.sum');
+                    var count = parseInt($input.val(), 10) || 1;
+                    var price = parseFloat($order.find('.price').text().replace('£', '')) || 0;
+                    var subtotal = count * price;
+
+                    console.log("Initializing price for product. Count:", count, "Unit Price:", price, "Subtotal:", subtotal);
+                    $order.find('.sum_price').text('£' + subtotal.toFixed(2));
+                });
+            }
 
             // Function to update the cart total
             function updateTotal() {
@@ -147,51 +182,54 @@
                     priceText = $order.find('.price').text(),
                     unitPrice = parseFloat(priceText.substring(1)) || 0,
                     newSubtotal = newCount * unitPrice;
+
+                console.log("Updating item count. New count:", newCount, "Subtotal:", newSubtotal);
                 $input.val(newCount);
-                $sumPriceElem.text('£' + newSubtotal);
+                $sumPriceElem.text('£' + newSubtotal.toFixed(2));
             }
 
-            // Plus button click event to increase quantity
-            $('.plus').on('click', function (event) {
+
+            $('.plus').off('click').on('click', function (event) {
                 event.preventDefault();
                 var $order = $(this).closest('.order_lists');
                 var $input = $(this).prev('input');
-                var newCount = parseInt($input.val(), 10) + 1;
+                var currentCount = parseInt($input.val(), 10) || 1;
+                var newCount = currentCount + 1;
+                $input.val(newCount);
                 updateItemCount($order, newCount);
                 updateTotal();
             });
 
-            // Reduce button click event to decrease quantity
-            $('.reduce').on('click', function (event) {
+
+            $('.reduce').off('click').on('click', function (event) {
                 event.preventDefault();
                 var $order = $(this).closest('.order_lists');
                 var $input = $(this).next('input');
-                var currentCount = parseInt($input.val(), 10);
+                var currentCount = parseInt($input.val(), 10) || 1;
                 if (currentCount > 1) {
-                    updateItemCount($order, currentCount - 1);
+                    var newCount = currentCount - 1;
+                    updateItemCount($order, newCount);
                     updateTotal();
                 }
             });
 
-            // Delete button click event
-            $('.delBtn').on('click', function () {
+            $('.delBtn').off('click').on('click', function () {
                 var $order = $(this).closest('.order_lists');
                 $('.model_bg, .my_model').fadeIn(300);
 
-                // Confirm delete action
-                $('.dialog-sure').on('click', function () {
+
+                $('.dialog-sure').off('click').on('click', function () {
                     $order.remove();
                     $('.model_bg, .my_model').fadeOut(300);
                     updateTotal();
                 });
 
-                // Close delete modal
-                $('.closeModel, .dialog-close').on('click', function () {
+                $('.closeModel, .dialog-close').off('click').on('click', function () {
                     $('.model_bg, .my_model').fadeOut(300);
                 });
             });
 
-            // Order confirmation button click event
+
             $('#jiesuan').off('click').on('click', function () {
                 var selectedItems = [];
                 $('.son_check:checked').each(function () {
@@ -203,13 +241,19 @@
                     };
                     selectedItems.push(JSON.stringify(item));
                 });
-                if (selectedItems.length === 0) return;
+                if (selectedItems.length === 0) {
+                    alert("Please select at least one item before placing the order.");
+                    return;
+                }
+
                 var url = '/order/create/?cartitems=' + selectedItems.join(',');
                 window.location.href = url;
             });
 
-            // Initialize total calculation
+
+            initPrices();
             updateTotal();
         });
+
     </script>
 {% endblock footer_js %}

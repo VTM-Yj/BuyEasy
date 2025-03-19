@@ -58,11 +58,11 @@
         }
 
         function login() {
-            //获取输入框的值
+            //Get the value of the input box
             let user_name = $('#user_name').val();
             let password = $('.login-password').val();
 
-            //简单校验
+            //Simple verification
             if (user_name.length < 6 || !isEmail(user_name)) {
                 $('#aSpan').text('The email address cannot be less than six characters long.');
                 return false;
@@ -86,7 +86,7 @@
         }
 
 
-        //切换验证码
+        //Switch verification code
         function changeCode(obj) {
             obj.src = "{% url 'loadCode' %}?r=" + new Date().getTime();
         }

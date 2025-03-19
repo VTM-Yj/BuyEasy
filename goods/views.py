@@ -19,8 +19,8 @@ class IndexView(View):
         number = int(number)
 
         categoryList = Category.objects.all().order_by('id')
-
-        goodsList = Goods.objects.filter(category_id=cid).order_by('id')
+        sort_by = request.GET.get('sort', 'id')
+        goodsList = Goods.objects.filter(category_id=cid).order_by(sort_by)
 
         pager = Paginator(goodsList, 3)
 
