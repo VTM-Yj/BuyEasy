@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     'goods',
     'users',
     'cart',
@@ -84,7 +85,6 @@ WSGI_APPLICATION = 'BuyEasy.wsgi.application'
 load_dotenv()
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-
 
 DATABASES = {
     'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
@@ -137,9 +137,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -154,5 +154,3 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = '/users/login/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
